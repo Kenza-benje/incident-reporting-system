@@ -1,98 +1,61 @@
-Incident Reporting and Monitoring System
+#Incident Reporting and Monitoring System
 
-A web-based platform that enables citizens to report environmental and public safety incidents while allowing authorities to review, manage, and resolve them efficiently.
+Overview
+The Incident Reporting and Monitoring System is a web-based application designed to enable citizens to report environmental and public safety incidents while allowing authorities to review, manage, and resolve them efficiently.
+The system supports a complete workflow from incident submission to resolution, making it a full incident lifecycle management platform rather than a simple reporting tool.
 
-📖 Description
+Description
+This platform improves communication between citizens and public authorities in Ifrane by providing a structured and transparent process for handling incidents.
+It allows users to submit reports with supporting evidence and location data, while authorities can validate, assign, and monitor incidents until they are resolved.
 
-The Incident Reporting and Monitoring System is designed to improve communication between citizens and public authorities in Ifrane.
-It provides a complete workflow from incident reporting → verification → assignment → resolution, making it more than just a reporting tool — it is a full incident lifecycle management system.
+Features
 
-✨ Features
-👤 Citizen Features
-Report incidents بسهولة (simple web form)
-Upload photo evidence (JPG, PNG)
-Select location via interactive map 📍
-Track report status in real-time
-Submit reports anonymously or as a registered user
-🏢 Authority Features
-Dashboard with all incidents
-Filter by category, status, date, and location
-Verify or reject reports
-Assign incidents to departments
-Update incident status (workflow management)
-Add internal notes and comments
-View statistics and summaries 📊
-🧭 Incident Workflow
-Citizen submits report
-        ↓
-System validates data + checks duplicates
-        ↓
-Incident stored in database
-        ↓
-Authority reviews report
-        ↓
-Verified / Rejected
-        ↓
-Assigned to responsible department
-        ↓
-Status updated until RESOLVED
-🏗️ Architecture
-Architecture Pattern: MVC (Model-View-Controller)
-Backend: REST API
+Citizen Features
+Submit incident reports through a simple web interface
+Upload photo evidence (JPG, JPEG, PNG)
+Select incident location using an interactive map
+Track the status of submitted reports
+Submit reports anonymously or as an authenticated user
+
+Authority Features
+Access a centralized dashboard displaying all incidents
+Filter incidents by category, status, date, and location
+Review incident details including images and geolocation
+Verify or reject submitted reports
+Assign incidents to relevant departments or personnel
+Update incident status throughout its lifecycle
+Add internal notes and investigation comments
+View aggregated statistics and summaries
+
+Incident Workflow
+Citizen submits an incident report
+System validates input and checks for duplicates
+Incident is stored in the database
+Authority reviews the report
+Incident is verified or rejected
+Verified incidents are assigned to a responsible entity
+Status is updated until the incident is resolved
+
+Architecture
+Architectural Pattern: Model-View-Controller (MVC)
+Backend: RESTful API
 Database: PostgreSQL
-Frontend: Web Application
-🔌 External Services
-Geolocation API (maps & location)
-Media Storage Service (image uploads)
-🔐 Security & Performance
-HTTPS (secure communication)
-Password hashing (no plain text storage)
-Role-based access control
-Account lock after multiple failed logins
-⚡ Fast response time (< 2 seconds for most operations)
-📈 Supports 300+ concurrent users
-🔄 Daily database backups
-📊 System Capabilities
-Duplicate incident detection (300m radius / 24h)
-Incident status tracking:
-Submitted
-Under Review
-Verified
-Rejected
-In Progress
-Resolved
-Audit logging
-Data retention (minimum 3 years)
-🖼️ Wireframes (UI Design)
+Frontend: Web-based interface
 
-👉 https://www.figma.com/make/T2M5xM9IkzdC8xLgW37W2Y
 
-📁 Project Structure (Suggested)
-incident-reporting-system/
-│
-├── backend/
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   └── services/
-│
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   └── assets/
-│
-├── database/
-│   └── schema.sql
-│
-├── docs/
-│   └── diagrams/
-│
-├── README.md
-└── .gitignore
-👥 Team
+External Integrations
+Geolocation API for map and location services
+Media storage service for handling uploaded images
+
+System Capabilities
+Duplicate incident detection within a 300-meter radius over a 24-hour period
+Incident status tracking (Submitted, Under Review, Verified, Rejected, In Progress, Resolved)
+Audit logging for all major system actions
+Data retention for a minimum of three years
+
+Team
+Marwa Errahmani
 Aicha Labyad
 Imane Chnigar
 Kenza Benjelloun
-Marwa Errahmani
-
 Supervisor: Dr. Chakiri Houda
