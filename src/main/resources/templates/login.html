@@ -81,12 +81,24 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="email" class="form-label">Email</label>
-                            <input id="email" name="email" type="email" class="form-control" placeholder="name@email.com" required>
+                            <label for="loginMethod" class="form-label">Citizen Login Method</label>
+                            <select id="loginMethod" name="loginMethod" class="form-select">
+                                <option value="EMAIL">Email</option>
+                                <option value="ID">Citizen ID</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="identifier" class="form-label" id="identifierLabel">Email</label>
+                            <input id="identifier" name="identifier" type="text" class="form-control" placeholder="name@email.com" required>
                         </div>
                         <div class="col-md-6">
                             <label for="password" class="form-label">Password</label>
                             <input id="password" name="password" type="password" class="form-control" placeholder="Enter password" required>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="small text-secondary">
+                                Authority users can keep using email-style identifier.
+                            </div>
                         </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary w-100 py-2">Continue</button>
@@ -111,6 +123,9 @@
     const citizenCard = document.getElementById("citizenRoleCard");
     const authorityCard = document.getElementById("authorityRoleCard");
     const radioButtons = document.querySelectorAll('input[name="role"]');
+    const loginMethod = document.getElementById("loginMethod");
+    const identifier = document.getElementById("identifier");
+    const identifierLabel = document.getElementById("identifierLabel");
 
     function refreshRoleStyles() {
         citizenCard.classList.remove("active");
@@ -124,8 +139,20 @@
         }
     }
 
+    function refreshIdentifierField() {
+        if (loginMethod.value === "ID") {
+            identifierLabel.textContent = "Citizen ID";
+            identifier.placeholder = "e.g. CIT-2026-001";
+        } else {
+            identifierLabel.textContent = "Email";
+            identifier.placeholder = "name@email.com";
+        }
+    }
+
     radioButtons.forEach(radio => radio.addEventListener("change", refreshRoleStyles));
+    loginMethod.addEventListener("change", refreshIdentifierField);
     refreshRoleStyles();
+    refreshIdentifierField();
 </script>
 </body>
 </html>

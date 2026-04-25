@@ -12,7 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class AuthController {
-    private final Map<String, String> citizenPasswordsByEmail = new ConcurrentHashMap<>();
+    private final Map<String, CitizenAccount> citizenAccountsByEmail = new ConcurrentHashMap<>();
+    private final Map<String, CitizenAccount> citizenAccountsById = new ConcurrentHashMap<>();
 
     @GetMapping("/signup")
     public String signupPage() {
@@ -22,12 +23,14 @@ public class AuthController {
     @PostMapping("/signup")
     public String signup(
             @RequestParam("fullName") String fullName,
+            @RequestParam("citizenId") String citizenId,
             @RequestParam("email") String email,
             @RequestParam("password") String password,
             @RequestParam("confirmPassword") String confirmPassword,
             RedirectAttributes redirectAttributes
     ) {
         if (fullName == null || fullName.isBlank() ||
+                citizenId == null || citizenId.isBlank() ||
                 email == null || email.isBlank() ||
                 password == null || password.isBlank() ||
                 confirmPassword == null || confirmPassword.isBlank()) {
@@ -43,15 +46,28 @@ public class AuthController {
             return "redirect:/signup";
         }
 
+        String normalizedId = citizenId.trim().toUpperCase();
+        if (citizenAccountsById.containsKey(normalizedId)) {
+            redirectAttributes.addFlashAttribute("error", "This citizen ID is already in use.");
+            return "redirect:/signup";
+        }
+
         String normalizedEmail = email.trim().toLowerCase();
-        if (citizenPasswordsByEmail.containsKey(normalizedEmail)) {
+        if (citizenAccountsByEmail.containsKey(normalizedEmail)) {
             redirectAttributes.addFlashAttribute("error", "An account already exists with this email.");
             return "redirect:/signup";
         }
 
         // Placeholder in-memory registration for frontend flow demo.
         // Member 2 can replace this with persistent user service + secure password hashing.
-        citizenPasswordsByEmail.put(normalizedEmail, password);
+        CitizenAccount account = new CitizenAccount(
+                fullName.trim(),
+                normalizedId,
+                normalizedEmail,
+                password
+        );
+        citizenAccountsById.put(normalizedId, account);
+        citizenAccountsByEmail.put(normalizedEmail, account);
         redirectAttributes.addFlashAttribute("success", "Account created successfully. Please sign in.");
         redirectAttributes.addFlashAttribute("selectedRole", "CITIZEN");
         return "redirect:/login";
@@ -69,12 +85,13 @@ public class AuthController {
     @PostMapping("/login")
     public String login(
             @RequestParam("role") String role,
-            @RequestParam("email") String email,
+            @RequestParam(value = "loginMethod", required = false, defaultValue = "EMAIL") String loginMethod,
+            @RequestParam("identifier") String identifier,
             @RequestParam("password") String password,
             RedirectAttributes redirectAttributes
     ) {
-        if (email == null || email.isBlank() || password == null || password.isBlank()) {
-            redirectAttributes.addFlashAttribute("error", "Email and password are required.");
+        if (identifier == null || identifier.isBlank() || password == null || password.isBlank()) {
+            redirectAttributes.addFlashAttribute("error", "Identifier and password are required.");
             redirectAttributes.addFlashAttribute("selectedRole", role);
             return "redirect:/login";
         }
@@ -86,16 +103,30 @@ public class AuthController {
             return "redirect:/authority/dashboard";
         }
 
-        String normalizedEmail = email.trim().toLowerCase();
-        String registeredPassword = citizenPasswordsByEmail.get(normalizedEmail);
-        if (registeredPassword != null && !registeredPassword.equals(password)) {
+        CitizenAccount account;
+        if ("ID".equalsIgnoreCase(loginMethod)) {
+            account = citizenAccountsById.get(identifier.trim().toUpperCase());
+        } else {
+            account = citizenAccountsByEmail.get(identifier.trim().toLowerCase());
+        }
+
+        if (account == null || !account.password().equals(password)) {
             redirectAttributes.addFlashAttribute("error", "Invalid citizen credentials.");
             redirectAttributes.addFlashAttribute("selectedRole", "CITIZEN");
             return "redirect:/login";
         }
 
-        String userId = normalizedEmail.replace("@", "_").replace(".", "_");
+        String userId = account.citizenId().toLowerCase();
         redirectAttributes.addFlashAttribute("success", "Welcome back, citizen user.");
-        return "redirect:/citizen/my-reports?userId=" + userId;
+        // Continue to citizen reporting flow after successful login.
+        return "redirect:/citizen/report?userId=" + userId;
+    }
+
+    private record CitizenAccount(
+            String fullName,
+            String citizenId,
+            String email,
+            String password
+    ) {
     }
 }
