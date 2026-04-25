@@ -17,6 +17,10 @@
             box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08);
         }
 
+        .soft-muted {
+            color: #5f6f87;
+        }
+
         .role-card {
             border: 1px solid #d9e2ef;
             border-radius: 0.75rem;
@@ -45,7 +49,7 @@
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <div>
                             <h1 class="h3 mb-2">Sign In</h1>
-                            <p class="text-secondary mb-0">Access citizen services or authority workspace.</p>
+                            <p class="soft-muted mb-0">Access citizen services or authority workspace.</p>
                         </div>
                         <a href="/" class="btn btn-outline-secondary btn-sm">Back Home</a>
                     </div>
@@ -84,15 +88,6 @@
                             <label for="password" class="form-label">Password</label>
                             <input id="password" name="password" type="password" class="form-control" placeholder="Enter password" required>
                         </div>
-                        <div class="col-12 d-flex align-items-center justify-content-between">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="rememberMe">
-                                <label class="form-check-label text-secondary" for="rememberMe">
-                                    Remember me
-                                </label>
-                            </div>
-                            <a href="#" class="small text-decoration-none">Forgot password?</a>
-                        </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary w-100 py-2">Continue</button>
                         </div>
@@ -103,7 +98,7 @@
                         <a href="/signup" class="text-decoration-none fw-semibold">Create an account</a>
                     </p>
 
-                    <p class="small text-secondary mt-4 mb-0">
+                    <p class="small soft-muted mt-4 mb-0">
                         This login screen is integrated for UI workflow now. Authentication rules can be connected to your core backend service next.
                     </p>
                 </div>
