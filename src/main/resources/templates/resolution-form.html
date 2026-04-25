@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Resolve Incident | Incident Reporting and Monitoring System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #f4f6ff;
+            --bg-soft: #eef2ff;
+            --card-bg: #ffffff;
+            --text-main: #1f2a44;
+            --text-muted: #6b7280;
+            --primary: #4f46e5;
+            --primary-2: #6366f1;
+            --accent: #7c3aed;
+            --lavender: #ede9fe;
+            --info-soft: #e0ecff;
+            --success-soft: #dff7ec;
+            --warning-soft: #fff3dc;
+            --danger-soft: #ffe3e8;
+            --border-soft: #dbe3ff;
+        }
+
+        body {
+            font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+            background:
+                    radial-gradient(circle at 10% -10%, #dbe4ff 0%, transparent 40%),
+                    radial-gradient(circle at 90% 0%, #efe7ff 0%, transparent 35%),
+                    var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .top-navbar {
+            background: linear-gradient(135deg, #1e3a8a 0%, #4338ca 55%, #6d28d9 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 10px 30px rgba(45, 56, 146, 0.28);
+        }
+
+        .brand-chip {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #312e81;
+            background: linear-gradient(135deg, #dbeafe, #e9d5ff);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        }
+
+        .brand-title {
+            color: #f8faff;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            font-size: 1rem;
+        }
+
+        .signed-box {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 14px;
+            padding: 0.5rem 0.75rem;
+            color: #eef2ff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            backdrop-filter: blur(6px);
+        }
+
+        .signed-label {
+            margin: 0;
+            font-size: 0.64rem;
+            letter-spacing: 0.12em;
+            opacity: 0.86;
+        }
+
+        .signed-user {
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .btn-logout {
+            color: #f8fafc;
+            border-color: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 0.32rem 0.8rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .btn-logout:hover {
+            color: #1e1b4b;
+            background: #fff;
+            border-color: #fff;
+        }
+
+        .page-container {
+            max-width: 1060px;
+        }
+
+        .page-head {
+            background: linear-gradient(145deg, #ffffff 0%, #f5f7ff 100%);
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
+            padding: 1.25rem 1.25rem;
+            box-shadow: 0 8px 24px rgba(44, 61, 129, 0.09);
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #1f2f66;
+        }
+
+        .page-subtitle {
+            margin: 0.35rem 0 0;
+            color: var(--text-muted);
+        }
+
+        .btn-soft-outline {
+            border: 1px solid #c7d2fe;
+            background: #f8faff;
+            color: #4338ca;
+            border-radius: 12px;
+            padding: 0.48rem 0.9rem;
+            font-weight: 600;
+            font-size: 0.84rem;
+        }
+
+        .btn-soft-outline:hover {
+            background: #eef2ff;
+            color: #3730a3;
+            border-color: #a5b4fc;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border: none;
+            color: #fff;
+            border-radius: 12px;
+            padding: 0.48rem 0.95rem;
+            font-weight: 600;
+            font-size: 0.84rem;
+            box-shadow: 0 8px 16px rgba(94, 74, 216, 0.25);
+        }
+
+        .btn-gradient:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(94, 74, 216, 0.32);
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
+            box-shadow: 0 12px 28px rgba(49, 63, 129, 0.1);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #e6ebff;
+            background: linear-gradient(180deg, #ffffff 0%, #f9faff 100%);
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #26387a;
+        }
+
+        .panel-body {
+            padding: 1.2rem;
+        }
+
+        .info-block {
+            background: #f8faff;
+            border: 1px solid #e3e8ff;
+            border-radius: 14px;
+            padding: 0.75rem 0.85rem;
+            height: 100%;
+        }
+
+        .info-label {
+            display: block;
+            font-size: 0.72rem;
+            color: #6b7280;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1f2a44;
+            margin: 0;
+            line-height: 1.35;
+        }
+
+        .category-chip {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.34rem 0.72rem;
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+        }
+
+        .badge-soft {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.3rem 0.7rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            border: 1px solid transparent;
+        }
+
+        .badge-status {
+            background: var(--warning-soft);
+            border-color: #fcd9a8;
+            color: #9a5f11;
+        }
+
+        .badge-urgency {
+            background: var(--danger-soft);
+            border-color: #ffc6d2;
+            color: #b4234a;
+        }
+
+        .required-label::after {
+            content: " *";
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2b3f86;
+            margin-bottom: 0.42rem;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 12px;
+            border-color: #d4ddff;
+            background-color: #fcfdff;
+            padding: 0.62rem 0.85rem;
+            color: #1f2a44;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #7c83ff;
+            box-shadow: 0 0 0 0.22rem rgba(79, 70, 229, 0.16);
+            background: #fff;
+        }
+
+        .form-control::file-selector-button {
+            border: none;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+            color: #4338ca;
+            padding: 0.42rem 0.74rem;
+            margin-right: 0.75rem;
+            font-weight: 600;
+        }
+
+        .form-text {
+            color: #667085;
+            margin-top: 0.35rem;
+            font-size: 0.79rem;
+        }
+
+        .btn-submit {
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+            color: #fff;
+            font-weight: 700;
+            padding: 0.62rem 1rem;
+            box-shadow: 0 10px 18px rgba(79, 70, 229, 0.28);
+        }
+
+        .btn-submit:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 12px 22px rgba(79, 70, 229, 0.34);
+        }
+
+        .btn-cancel {
+            border-radius: 12px;
+            border: 1px solid #c8d1fb;
+            color: #404b79;
+            background: #f8faff;
+            font-weight: 600;
+            padding: 0.62rem 1rem;
+        }
+
+        .btn-cancel:hover {
+            background: #eef2ff;
+            border-color: #aab9ff;
+            color: #303b66;
+        }
+
+        .info-alert {
+            background: linear-gradient(145deg, #eef2ff 0%, #f7f5ff 100%);
+            border: 1px solid #d4dcff;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(68, 81, 157, 0.08);
+            padding: 1rem 1.1rem;
+            color: #2f3f7a;
+        }
+
+        .info-alert strong {
+            color: #352f87;
+        }
+
+        @media (max-width: 767.98px) {
+            .page-head {
+                padding: 1rem;
+            }
+
+            .panel-body,
+            .panel-header {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg top-navbar">
+    <div class="container-fluid px-3 px-md-4 py-2">
+        <a class="navbar-brand d-flex align-items-center gap-2 m-0" href="#">
+            <span class="brand-chip">IR</span>
+            <span class="brand-title">Incident Reporting &amp; Monitoring System</span>
+        </a>
+
+        <div class="ms-auto signed-box">
+            <div>
+                <p class="signed-label">SIGNED IN AS</p>
+                <p class="signed-user">Authority Admin</p>
+            </div>
+            <button class="btn btn-logout btn-sm" type="button">Logout</button>
+        </div>
+    </div>
+</nav>
+
+<main class="container page-container py-4 py-md-5">
+    <section class="page-head mb-4">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+            <div>
+                <h1 class="page-title">Resolve Incident</h1>
+                <p class="page-subtitle">Provide complete resolution details for the selected incident.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/authority/incidents}" class="btn btn-soft-outline">Back to Incidents List</a>
+                <a th:href="@{/authority/incidents/details}" class="btn btn-gradient">Back to Incident Details</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel mb-4">
+        <div class="panel-header">
+            <h2 class="panel-title">Incident Summary</h2>
+        </div>
+        <div class="panel-body">
+            <div class="row g-3">
+                <div class="col-sm-6 col-lg-4">
+                    <div class="info-block">
+                        <span class="info-label">Incident ID</span>
+                        <p class="info-value">INC-2026-0142</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4">
+                    <div class="info-block">
+                        <span class="info-label">Category</span>
+                        <span class="category-chip">PUBLIC_WORKS</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4">
+                    <div class="info-block">
+                        <span class="info-label">Current Status</span>
+                        <span class="badge-soft badge-status">In Progress</span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="info-block">
+                        <span class="info-label">Title</span>
+                        <p class="info-value">Damaged streetlight causing low visibility near Central Library</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4">
+                    <div class="info-block">
+                        <span class="info-label">Assigned Department</span>
+                        <p class="info-value">Public Works Department</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-4">
+                    <div class="info-block">
+                        <span class="info-label">Urgency</span>
+                        <span class="badge-soft badge-urgency">High</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel mb-4">
+        <div class="panel-header">
+            <h2 class="panel-title">Resolution Form</h2>
+        </div>
+        <div class="panel-body">
+            <form action="#" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="resolutionNotes" class="form-label required-label">Resolution Notes</label>
+                    <textarea class="form-control" id="resolutionNotes" name="resolutionNotes" rows="5" placeholder="Describe the actions taken, final outcome, and any follow-up required." required></textarea>
+                    <div class="form-text">Include enough detail for audit and future review.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="afterPhoto" class="form-label required-label">After-Photo Upload</label>
+                    <input class="form-control" type="file" id="afterPhoto" name="afterPhoto" required>
+                    <div class="form-text">Upload a clear image as proof of completed work (JPG/PNG).</div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="responsibleAgent" class="form-label required-label">Responsible Agent</label>
+                        <input type="text" class="form-control" id="responsibleAgent" name="responsibleAgent" placeholder="e.g., Engr. Jane Dela Cruz" required>
+                        <div class="form-text">Enter full name and designation of the accountable officer.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="resolutionTimestamp" class="form-label required-label">Resolution Timestamp</label>
+                        <input type="datetime-local" class="form-control" id="resolutionTimestamp" name="resolutionTimestamp" value="2026-04-16T10:30" required>
+                        <div class="form-text">Use the official date and time the incident was resolved.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="resolutionType" class="form-label">Resolution Type</label>
+                        <select class="form-select" id="resolutionType" name="resolutionType">
+                            <option value="resolved" selected>Resolved</option>
+                            <option value="closed">Closed</option>
+                            <option value="forwarded">Forwarded</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+                    <button type="submit" class="btn btn-submit">Confirm Resolution</button>
+                    <button type="button" class="btn btn-cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="info-alert" role="alert" aria-live="polite">
+        <strong>Resolution Requirement:</strong> Incidents must include valid proof (after-photo) and responsible authority details before they can be marked as resolved.
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>All Incidents - Authority Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f3f5ff;
+            --bg-soft: #eef2ff;
+            --card-bg: #ffffff;
+            --text-primary: #1f2a44;
+            --text-muted: #66708a;
+            --line-soft: #dbe1f2;
+            --primary: #3f51cf;
+            --primary-dark: #2f3fb0;
+            --indigo: #4f46e5;
+            --purple: #7c3aed;
+            --lavender: #ede9fe;
+            --shadow-soft: 0 12px 28px rgba(54, 74, 170, 0.10);
+            --shadow-card: 0 8px 22px rgba(31, 42, 68, 0.08);
+            --radius-xl: 1.1rem;
+            --radius-lg: 0.85rem;
+            --radius-md: 0.7rem;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-primary);
+            background:
+                    radial-gradient(circle at 6% -10%, rgba(124, 58, 237, 0.10), transparent 38%),
+                    radial-gradient(circle at 94% 0%, rgba(79, 70, 229, 0.11), transparent 34%),
+                    var(--bg-page);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: linear-gradient(120deg, #24368c 0%, #3348ad 42%, #4f46e5 100%);
+            box-shadow: 0 10px 30px rgba(24, 38, 104, 0.35);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .brand-mark {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 0.65rem;
+            background: linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(221, 225, 255, 0.88));
+            color: #3447a6;
+            font-weight: 800;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 0 1px rgba(78, 92, 188, 0.22);
+        }
+
+        .navbar-brand {
+            margin-right: 0;
+            color: #f8f9ff !important;
+            font-weight: 700;
+            letter-spacing: 0.015em;
+            font-size: 1.03rem;
+        }
+
+        .signed-in-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            padding: 0.35rem 0.45rem 0.35rem 0.85rem;
+            color: #e7ebff;
+        }
+
+        .signed-in-meta {
+            line-height: 1.1;
+        }
+
+        .signed-in-meta .label {
+            font-size: 0.72rem;
+            color: rgba(225, 232, 255, 0.88);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .signed-in-meta .name {
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            border: none;
+            border-radius: 999px;
+            padding: 0.42rem 0.95rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #2d3b92;
+            background: linear-gradient(145deg, #f8faff, #dbe4ff);
+            box-shadow: 0 4px 14px rgba(30, 50, 125, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(26, 44, 115, 0.30);
+        }
+
+        .content-wrap {
+            padding-top: 1.7rem;
+            padding-bottom: 2.2rem;
+        }
+
+        .hero-header {
+            background: linear-gradient(132deg, #ffffff 0%, #f5f7ff 55%, #f1edff 100%);
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-soft);
+            padding: 1.3rem 1.35rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-header h1 {
+            margin: 0;
+            font-size: 1.65rem;
+            font-weight: 750;
+            letter-spacing: 0.01em;
+        }
+
+        .hero-subtitle {
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            margin-bottom: 0;
+            font-size: 0.96rem;
+        }
+
+        .btn-ui {
+            border-radius: 0.72rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.56rem 1.0rem;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .btn-ui-primary {
+            color: #fff;
+            background: linear-gradient(130deg, var(--primary), var(--purple));
+            box-shadow: 0 7px 16px rgba(77, 74, 210, 0.25);
+        }
+
+        .btn-ui-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(77, 74, 210, 0.30);
+            color: #fff;
+        }
+
+        .btn-ui-outline {
+            color: var(--primary-dark);
+            border-color: #c7d2fe;
+            background: #eef2ff;
+        }
+
+        .btn-ui-outline:hover {
+            color: #26338d;
+            border-color: #b6c4ff;
+            background: #e4eaff;
+        }
+
+        .dashboard-card {
+            border: 1px solid var(--line-soft);
+            border-radius: var(--radius-xl);
+            background: var(--card-bg);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+
+        .dashboard-card .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #e8ecfa;
+            background: linear-gradient(145deg, #f8faff 0%, #f2f5ff 70%, #efeaff 100%);
+        }
+
+        .dashboard-card .card-head h2 {
+            margin: 0;
+            font-size: 1.03rem;
+            font-weight: 700;
+            color: #2b3965;
+        }
+
+        .dashboard-card .card-body {
+            padding: 1.2rem;
+        }
+
+        .form-label {
+            font-size: 0.79rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: #4b5880;
+            margin-bottom: 0.4rem;
+            font-weight: 650;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: var(--radius-md);
+            border-color: #cfd7ef;
+            background-color: #fbfcff;
+            color: #2d3758;
+            min-height: 2.65rem;
+            padding-top: 0.55rem;
+            padding-bottom: 0.55rem;
+            box-shadow: inset 0 1px 2px rgba(76, 98, 190, 0.03);
+            font-size: 0.92rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #9aa8f7;
+            box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.15);
+            background-color: #fff;
+        }
+
+        .table-wrap {
+            padding: 0.4rem 1.2rem 1.25rem;
+        }
+
+        .incidents-table {
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .incidents-table thead th {
+            border: none;
+            background: #eef2ff;
+            color: #3c4a74;
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            padding: 0.8rem 0.9rem;
+        }
+
+        .incidents-table thead th:first-child {
+            border-top-left-radius: 0.75rem;
+        }
+
+        .incidents-table thead th:last-child {
+            border-top-right-radius: 0.75rem;
+        }
+
+        .incidents-table tbody td {
+            border-color: #edf1fb;
+            color: #2f3b5f;
+            padding: 0.88rem 0.9rem;
+            white-space: nowrap;
+            vertical-align: middle;
+            font-size: 0.92rem;
+        }
+
+        .incidents-table tbody tr {
+            transition: background-color 0.18s ease, transform 0.18s ease;
+        }
+
+        .incidents-table tbody tr:hover {
+            background: #f7f9ff;
+        }
+
+        .text-id {
+            font-weight: 700;
+            color: #2e3a8f;
+            letter-spacing: 0.01em;
+        }
+
+        .soft-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 0.3rem 0.62rem;
+            font-size: 0.74rem;
+            font-weight: 650;
+            line-height: 1;
+            letter-spacing: 0.01em;
+            border: 1px solid transparent;
+        }
+
+        .urgency-high { color: #9f2439; background: #feecef; border-color: #f9d1d9; }
+        .urgency-medium { color: #9a5b00; background: #fff4e5; border-color: #ffe1b5; }
+        .urgency-low { color: #206743; background: #e8f8ef; border-color: #caebd7; }
+
+        .status-submitted { color: #4f5a77; background: #edf1f7; border-color: #d8dfed; }
+        .status-under-review { color: #1f53b8; background: #e7f0ff; border-color: #cddfff; }
+        .status-assigned { color: #4a36b5; background: #eee9ff; border-color: #d8ccff; }
+        .status-in-progress { color: #9c6208; background: #fff2de; border-color: #ffe0b8; }
+        .status-resolved { color: #1f7a4b; background: #e7f8ee; border-color: #c8ecd7; }
+        .status-overdue { color: #7f1024; background: #fbe5ea; border-color: #f5c8d2; }
+
+        .overdue-yes { color: #87142a; background: #fbe8ec; border-color: #f4cad3; }
+        .overdue-no { color: #4e5f82; background: #eef2f8; border-color: #d9e0ed; }
+
+        .btn-view {
+            min-width: 74px;
+            border-radius: 0.62rem;
+            border: 1px solid #c9d5ff;
+            background: #eef2ff;
+            color: #3041a7;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0.36rem 0.72rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-view:hover {
+            color: #23328f;
+            border-color: #aebdf7;
+            background: #e5ebff;
+        }
+
+        @media (max-width: 991.98px) {
+            .signed-in-box {
+                width: 100%;
+                justify-content: space-between;
+                border-radius: 0.8rem;
+                padding: 0.6rem 0.65rem;
+                margin-top: 0.75rem;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .content-wrap {
+                padding-top: 1.2rem;
+            }
+
+            .hero-header h1 {
+                font-size: 1.4rem;
+            }
+
+            .dashboard-card .card-head,
+            .dashboard-card .card-body,
+            .table-wrap {
+                padding-left: 0.95rem;
+                padding-right: 0.95rem;
+            }
+
+            .incidents-table thead th,
+            .incidents-table tbody td {
+                font-size: 0.84rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg topbar">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">
+            <span class="brand-wrap">
+                <span class="brand-mark">IR</span>
+                <span>Incident Reporting &amp; Monitoring System</span>
+            </span>
+        </a>
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#topNav" aria-controls="topNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="topNav">
+            <div class="ms-auto mt-3 mt-lg-0">
+                <div class="signed-in-box">
+                    <div class="signed-in-meta text-end">
+                        <div class="label">Signed in as</div>
+                        <div class="name">Authority Admin</div>
+                    </div>
+                    <button type="button" class="btn-logout">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="container-fluid px-4 content-wrap">
+    <section class="hero-header">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div>
+                <h1>All Incidents</h1>
+                <p class="hero-subtitle">Manage submitted incident reports across departments.</p>
+            </div>
+            <a th:href="@{/authority/dashboard}" class="btn btn-ui btn-ui-outline">Back to Dashboard</a>
+        </div>
+    </section>
+
+    <section class="dashboard-card">
+        <div class="card-head">
+            <h2>Filter &amp; Search</h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-lg-2">
+                    <label for="categoryFilter" class="form-label">Category</label>
+                    <select id="categoryFilter" class="form-select">
+                        <option selected>All Categories</option>
+                        <option>Wildfire</option>
+                        <option>Road Accident</option>
+                        <option>Snow Blockage</option>
+                        <option>Water Supply Problem</option>
+                        <option>Illegal Logging</option>
+                        <option>Forest Degradation</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-2">
+                    <label for="statusFilter" class="form-label">Status</label>
+                    <select id="statusFilter" class="form-select">
+                        <option selected>All Statuses</option>
+                        <option>Submitted</option>
+                        <option>Reviewed</option>
+                        <option>Assigned</option>
+                        <option>In Progress</option>
+                        <option>Resolved</option>
+                        <option>Rejected</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-2">
+                    <label for="urgencyFilter" class="form-label">Urgency</label>
+                    <select id="urgencyFilter" class="form-select">
+                        <option selected>All Urgency</option>
+                        <option>Low</option>
+                        <option>Medium</option>
+                        <option>High</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-2">
+                    <label for="overdueFilter" class="form-label">Overdue</label>
+                    <select id="overdueFilter" class="form-select">
+                        <option selected>All</option>
+                        <option>Yes</option>
+                        <option>No</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-2">
+                    <label for="dateFilter" class="form-label">Date</label>
+                    <input type="date" id="dateFilter" class="form-control">
+                </div>
+
+                <div class="col-12 col-lg-2">
+                    <label for="searchInput" class="form-label">Search</label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by ID or title">
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <button type="button" class="btn btn-ui btn-ui-primary">Apply Filters</button>
+                <button type="button" class="btn btn-ui btn-ui-outline">Reset</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-card">
+        <div class="card-head">
+            <h2>Incidents List</h2>
+        </div>
+        <div class="table-wrap">
+            <div class="table-responsive">
+                <table class="table incidents-table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Incident ID</th>
+                        <th>Category</th>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Urgency</th>
+                        <th>Status</th>
+                        <th>Assigned Department</th>
+                        <th>Overdue</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="text-id">INC-2026-0012</td>
+                        <td>Wildfire</td>
+                        <td>Smoke and fire near Pine Valley</td>
+                        <td>2026-04-12</td>
+                        <td><span class="soft-badge urgency-high">High</span></td>
+                        <td><span class="soft-badge status-under-review">Reviewed</span></td>
+                        <td>N/A</td>
+                        <td><span class="soft-badge overdue-no">No</span></td>
+                        <td><a th:href="@{/authority/incidents/details}" class="btn-view">View</a></td>
+                    </tr>
+                    <tr>
+                        <td class="text-id">INC-2026-0015</td>
+                        <td>Road Accident</td>
+                        <td>Multi-vehicle collision on Highway 17</td>
+                        <td>2026-04-11</td>
+                        <td><span class="soft-badge urgency-high">High</span></td>
+                        <td><span class="soft-badge status-in-progress">In Progress</span></td>
+                        <td>Emergency Services</td>
+                        <td><span class="soft-badge overdue-yes">Yes</span></td>
+                        <td><a th:href="@{/authority/incidents/details}" class="btn-view">View</a></td>
+                    </tr>
+                    <tr>
+                        <td class="text-id">INC-2026-0018</td>
+                        <td>Snow Blockage</td>
+                        <td>Main pass blocked due to heavy snowfall</td>
+                        <td>2026-04-09</td>
+                        <td><span class="soft-badge urgency-medium">Medium</span></td>
+                        <td><span class="soft-badge status-assigned">Assigned</span></td>
+                        <td>Public Works</td>
+                        <td><span class="soft-badge overdue-no">No</span></td>
+                        <td><a th:href="@{/authority/incidents/details}" class="btn-view">View</a></td>
+                    </tr>
+                    <tr>
+                        <td class="text-id">INC-2026-0021</td>
+                        <td>Water Supply Problem</td>
+                        <td>Pipeline leakage causing low water pressure</td>
+                        <td>2026-04-10</td>
+                        <td><span class="soft-badge urgency-medium">Medium</span></td>
+                        <td><span class="soft-badge status-resolved">Resolved</span></td>
+                        <td>Water Management</td>
+                        <td><span class="soft-badge overdue-no">No</span></td>
+                        <td><a th:href="@{/authority/incidents/details}" class="btn-view">View</a></td>
+                    </tr>
+                    <tr>
+                        <td class="text-id">INC-2026-0024</td>
+                        <td>Illegal Logging</td>
+                        <td>Unauthorized tree cutting in North Reserve</td>
+                        <td>2026-04-08</td>
+                        <td><span class="soft-badge urgency-high">High</span></td>
+                        <td><span class="soft-badge status-in-progress">In Progress</span></td>
+                        <td>Forest Protection</td>
+                        <td><span class="soft-badge overdue-yes">Yes</span></td>
+                        <td><a th:href="@{/authority/incidents/details}" class="btn-view">View</a></td>
+                    </tr>
+                    <tr>
+                        <td class="text-id">INC-2026-0028</td>
+                        <td>Forest Degradation</td>
+                        <td>Soil erosion and habitat loss in Sector 4</td>
+                        <td>2026-04-07</td>
+                        <td><span class="soft-badge urgency-low">Low</span></td>
+                        <td><span class="soft-badge status-submitted">Submitted</span></td>
+                        <td>N/A</td>
+                        <td><span class="soft-badge overdue-no">No</span></td>
+                        <td><a th:href="@{/authority/incidents/details}" class="btn-view">View</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
