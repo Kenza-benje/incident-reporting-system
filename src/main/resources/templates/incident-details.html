@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Incident Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        :root {
+            --primary: #3346d3;
+            --primary-dark: #2a2fa8;
+            --indigo: #4f46e5;
+            --purple: #7c3aed;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-500: #64748b;
+            --slate-700: #334155;
+            --card-shadow: 0 10px 30px rgba(41, 59, 196, 0.12);
+
+            --border: #e2e8f0;
+            --shadow-sm: 0 8px 22px rgba(15, 23, 42, 0.08);
+            --radius-lg: 18px;
+            --muted: #64748b;
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at top left, #eef2ff 0%, #f8faff 45%, #f5f7ff 100%);
+            color: #0f172a;
+            font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .topbar {
+            background: linear-gradient(120deg, #24368c 0%, #3348ad 42%, #4f46e5 100%);
+            box-shadow: 0 10px 30px rgba(24, 38, 104, 0.35);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .brand-mark {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 0.65rem;
+            background: linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(221, 225, 255, 0.88));
+            color: #3447a6;
+            font-weight: 800;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 0 1px rgba(78, 92, 188, 0.22);
+        }
+
+        .navbar-brand {
+            margin-right: 0;
+            color: #f8f9ff !important;
+            font-weight: 700;
+            letter-spacing: 0.015em;
+            font-size: 1.03rem;
+        }
+
+        .signed-in-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            padding: 0.35rem 0.45rem 0.35rem 0.85rem;
+            color: #e7ebff;
+        }
+
+        .signed-in-meta {
+            line-height: 1.1;
+        }
+
+        .signed-in-meta .label {
+            font-size: 0.72rem;
+            color: rgba(225, 232, 255, 0.88);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .signed-in-meta .name {
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            border: none;
+            border-radius: 999px;
+            padding: 0.42rem 0.95rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: #2d3b92;
+            background: linear-gradient(145deg, #f8faff, #dbe4ff);
+            box-shadow: 0 4px 14px rgba(30, 50, 125, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(26, 44, 115, 0.30);
+        }
+
+        .page-header-wrap {
+            background: linear-gradient(130deg, #ffffff 0%, #f7f8ff 48%, #f2efff 100%);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius-lg);
+            padding: 1.35rem 1.35rem;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.58rem;
+            font-weight: 800;
+            letter-spacing: 0.01em;
+            color: #1e2d5a;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-top: 0.35rem;
+            margin-bottom: 0;
+            font-size: 0.96rem;
+        }
+
+        .btn-soft {
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.5rem 0.9rem;
+            border: 1px solid transparent;
+            box-shadow: inset 0 0 0 1px transparent;
+        }
+
+        .btn-soft-outline {
+            background: #f8f9ff;
+            color: #334064;
+            border-color: #dce2f7;
+        }
+
+        .btn-soft-outline:hover {
+            background: #eef2ff;
+            color: #253257;
+        }
+
+        .btn-soft-primary {
+            background: linear-gradient(120deg, #3f63ff 0%, #5748de 100%);
+            color: #fff;
+            border-color: rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 20px rgba(73, 88, 206, 0.22);
+        }
+
+        .btn-soft-primary:hover {
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+
+        .dashboard-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            box-shadow: var(--card-shadow);
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .dashboard-card .card-header {
+            background: linear-gradient(120deg, #f8faff, #f3f4ff);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 1.15rem;
+        }
+
+        .dashboard-card .card-header h2 {
+            color: #1e293b;
+            font-size: 1.02rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .info-grid strong {
+            color: #1e293b;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.32rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .status-assigned {
+            color: #8a3b00;
+            background: #ffedd5;
+            border: 1px solid #fdba74;
+        }
+
+        .urgency-high {
+            color: #7f1d1d;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+        }
+
+        .category-badge {
+            color: #312e81;
+            background: #e0e7ff;
+            border: 1px solid #a5b4fc;
+        }
+
+        .timeline {
+            position: relative;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 0;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            top: 19px;
+            left: 4%;
+            right: 4%;
+            height: 3px;
+            border-radius: 10px;
+            background: #dbe4ff;
+            z-index: 0;
+        }
+
+        .timeline-step {
+            position: relative;
+            flex: 1 1 0;
+            min-width: 0;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .timeline-dot {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            border: 2px solid #cbd5e1;
+            background: #ffffff;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .timeline-step.completed .timeline-dot,
+        .timeline-step.current .timeline-dot {
+            border-color: var(--indigo);
+            background: linear-gradient(120deg, var(--indigo), var(--purple));
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .timeline-step .label {
+            font-size: 0.83rem;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .timeline-step.current .label {
+            color: var(--primary);
+        }
+
+        .timeline-step.pending .label {
+            color: #94a3b8;
+        }
+
+        .map-placeholder {
+            border: 2px dashed #bfdbfe;
+            background: linear-gradient(120deg, #eff6ff, #eef2ff);
+            border-radius: 14px;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        #incidentMap {
+            height: 260px;
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid #bfdbfe;
+            overflow: hidden;
+        }
+
+        .evidence-img {
+            height: 150px;
+            object-fit: cover;
+            width: 100%;
+            border-radius: 12px;
+            background-color: #e2e8f0;
+            border: 1px solid #cbd5e1;
+        }
+
+        .table-modern thead th {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .table-modern td,
+        .table-modern th {
+            padding: 0.75rem;
+            font-size: 0.86rem;
+            vertical-align: middle;
+            border-color: #e2e8f0;
+        }
+
+        .btn-action {
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(120deg, #2563eb, #4f46e5);
+            color: #fff;
+            font-weight: 700;
+            padding: 0.62rem 0.9rem;
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+        }
+
+        .btn-action:hover {
+            color: #fff;
+            opacity: 0.96;
+        }
+
+        .toast-notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 9999;
+            min-width: 320px;
+            max-width: 420px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.9rem 1rem;
+            border-radius: 14px;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.18);
+            border: 1px solid transparent;
+            backdrop-filter: blur(6px);
+        }
+
+        .toast-success {
+            background: linear-gradient(120deg, #dcfce7, #bbf7d0);
+            border-color: #4ade80;
+            color: #14532d;
+        }
+
+        .toast-error {
+            background: linear-gradient(120deg, #fee2e2, #fecaca);
+            border-color: #f87171;
+            color: #7f1d1d;
+        }
+
+        .toast-message {
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin: 0;
+            flex: 1;
+        }
+
+        .toast-close {
+            border: none;
+            background: transparent;
+            color: inherit;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+            opacity: 0.8;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        .status-submitted {
+            color: #1e3a8a;
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+        }
+
+        .status-under-review {
+            color: #5b21b6;
+            background: #ede9fe;
+            border: 1px solid #c4b5fd;
+        }
+
+        .status-assigned {
+            color: #8a3b00;
+            background: #ffedd5;
+            border: 1px solid #fdba74;
+        }
+
+        .status-in-progress {
+            color: #075985;
+            background: #e0f2fe;
+            border: 1px solid #7dd3fc;
+        }
+
+        .status-resolved {
+            color: #14532d;
+            background: #dcfce7;
+            border: 1px solid #86efac;
+        }
+
+        .status-rejected {
+            color: #7f1d1d;
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+        }
+
+        @media (max-width: 576px) {
+            .toast-notification {
+                top: 0.75rem;
+                right: 0.75rem;
+                left: 0.75rem;
+                min-width: unset;
+                max-width: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg topbar">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">
+            <span class="brand-wrap">
+                <span class="brand-mark">IR</span>
+                <span>Incident Reporting &amp; Monitoring System</span>
+            </span>
+        </a>
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#topNav" aria-controls="topNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="topNav">
+            <div class="ms-auto mt-3 mt-lg-0">
+                <div class="signed-in-box">
+                    <div class="signed-in-meta text-end">
+                        <div class="label">SIGNED IN AS</div>
+                        <div class="name">Authority Admin</div>
+                    </div>
+                    <a th:href="@{/logout}" class="btn-logout text-decoration-none">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="toast-notification toast-success" th:if="${successMessage}">
+    <div class="toast-message" th:text="${successMessage}">
+        Success message
+    </div>
+    <button type="button" class="toast-close" aria-label="Close"
+            onclick="this.parentElement.style.display='none'">&times;</button>
+</div>
+
+<div class="toast-notification toast-error" th:if="${errorMessage}">
+    <div class="toast-message" th:text="${errorMessage}">
+        Error message
+    </div>
+    <button type="button" class="toast-close" aria-label="Close"
+            onclick="this.parentElement.style.display='none'">&times;</button>
+</div>
+
+<main class="container py-4 py-lg-5">
+    <section class="page-header-wrap mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 page-header">
+            <div>
+                <h1>Incident Details</h1>
+                <p class="subtitle">View the full report information, location, evidence, status, and available actions.</p>            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/authority/incidents}" class="btn btn-soft btn-soft-outline">Back to Incidents List</a>
+                <a th:href="@{/authority/dashboard}" class="btn btn-soft btn-soft-primary">Back to Dashboard</a>
+            </div>
+        </div>
+    </section>
+
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <h2>Incident Information</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 info-grid">
+
+                        <div class="col-sm-6">
+                            <strong>Incident ID:</strong>
+                            <span th:text="${'INC-' + incident.id}">INC-1</span>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <strong>Category:</strong>
+                            <span class="status-badge category-badge"
+                                  th:text="${incident.categoryDisplayName}">
+            Category
+        </span>
+                        </div>
+
+                        <div class="col-12">
+                            <strong>Title:</strong>
+                            <span th:text="${incident.title}">Incident title</span>
+                        </div>
+
+                        <div class="col-12">
+                            <strong>Description:</strong>
+                            <span th:text="${incident.description}">Incident description</span>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <strong>Date Submitted:</strong>
+                            <span th:text="${#temporals.format(incident.createdAt, 'dd MMM yyyy, HH:mm')}">
+            Date submitted
+        </span>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <strong>Urgency:</strong>
+                            <span class="status-badge urgency-high"
+                                  th:text="${incident.urgencyDisplayName != null ? incident.urgencyDisplayName : 'Not calculated'}">
+            Urgency
+        </span>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <strong>Current Status:</strong>
+                            <span class="status-badge"
+                                  th:classappend="${incident.status.name() == 'SUBMITTED'} ? ' status-submitted' :
+                      (${incident.status.name() == 'UNDER_REVIEW'} ? ' status-under-review' :
+                      (${incident.status.name() == 'ASSIGNED'} ? ' status-assigned' :
+                      (${incident.status.name() == 'IN_PROGRESS'} ? ' status-in-progress' :
+                      (${incident.status.name() == 'RESOLVED'} ? ' status-resolved' :
+                      (${incident.status.name() == 'REJECTED'} ? ' status-rejected' : '')))))"
+                                  th:text="${incident.statusDisplayName}">
+                                Status
+                            </span>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <strong>Assigned Department:</strong>
+                            <span th:text="${incident.assignedDepartment != null ? incident.assignedDepartment : 'Not assigned yet'}">
+            Not assigned yet
+        </span>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <strong>Assigned Officer:</strong>
+                            <span th:text="${incident.assignedOfficerName != null ? incident.assignedOfficerName : 'Not assigned yet'}">
+            Not assigned yet
+        </span>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <strong>Reported By:</strong>
+                            <span th:text="${incident.reporterName != null ? incident.reporterName : 'Unknown reporter'}">
+            Reporter
+        </span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <h2>Location Details</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Location:</strong>
+                        <span th:text="${incident.locationDescription != null ? incident.locationDescription : 'No location description'}">
+            Location
+        </span>
+                    </p>
+
+                    <p class="mb-3 text-secondary">
+                        <strong>Coordinates:</strong>
+
+                        <span th:if="${incident.latitude != null and incident.longitude != null}"
+                              th:text="|${#numbers.formatDecimal(incident.latitude, 1, 5)}, ${#numbers.formatDecimal(incident.longitude, 1, 5)}|">
+            Coordinates
+        </span>
+
+                        <span th:if="${incident.latitude == null or incident.longitude == null}">
+            No coordinates available
+        </span>
+                    </p>
+
+                    <div th:if="${incident.latitude != null and incident.longitude != null}">
+                        <div id="incidentMap"></div>
+
+                        <small class="text-secondary d-block mt-2">
+                            Map preview based on the submitted incident coordinates.
+                        </small>
+                    </div>
+
+                    <div class="map-placeholder"
+                         th:if="${incident.latitude == null or incident.longitude == null}">
+                        No map coordinates available
+                    </div>
+                </div>
+            </div>
+
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <h2>Evidence / Uploaded Images</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Multiple citizen evidence photos -->
+                    <div th:if="${incident.photoUrls != null and !#lists.isEmpty(incident.photoUrls)}"
+                         class="row g-2">
+                        <div class="col-sm-6 col-md-4" th:each="photoUrl : ${incident.photoUrls}">
+                            <a th:href="${photoUrl}" target="_blank">
+                                <img th:src="${photoUrl}"
+                                     class="evidence-img w-100"
+                                     alt="Citizen evidence photo"
+                                     style="object-fit:cover;height:180px;border-radius:0.5rem;">
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Legacy single photoUrl fallback -->
+                    <div th:if="${(incident.photoUrls == null or #lists.isEmpty(incident.photoUrls)) and incident.photoUrl != null}">
+                        <img th:src="${incident.photoUrl}"
+                             class="evidence-img"
+                             alt="Uploaded incident photo">
+                        <p class="small text-secondary mt-2 mb-0">Uploaded incident photo</p>
+                    </div>
+
+                    <p th:if="${(incident.photoUrls == null or #lists.isEmpty(incident.photoUrls)) and incident.photoUrl == null}"
+                       class="text-secondary mb-0">
+                        No uploaded photo available for this incident.
+                    </p>
+
+                    <!-- After-resolution photo -->
+                    <div th:if="${incident.afterPhotoUrl != null}" class="mt-3">
+                        <p class="fw-semibold text-success mb-1">Resolution Proof Photo</p>
+                        <a th:href="${incident.afterPhotoUrl}" target="_blank">
+                            <img th:src="${incident.afterPhotoUrl}"
+                                 class="evidence-img"
+                                 alt="Resolution proof photo"
+                                 style="max-width:320px;border-radius:0.5rem;border:2px solid #0f9d7a;">
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h2>Incident Life-cycle Timeline</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="timeline mb-0">
+
+                        <li class="timeline-step"
+                            th:classappend="${incident.status.name() == 'SUBMITTED'
+                     or incident.status.name() == 'UNDER_REVIEW'
+                     or incident.status.name() == 'ASSIGNED'
+                     or incident.status.name() == 'IN_PROGRESS'
+                     or incident.status.name() == 'RESOLVED'} ? 'completed' : 'pending'">
+                            <span class="timeline-dot">1</span>
+                            <div class="label">Submitted</div>
+                        </li>
+
+                        <li class="timeline-step"
+                            th:classappend="${incident.status.name() == 'UNDER_REVIEW'} ? 'current' :
+                        (${incident.status.name() == 'ASSIGNED'
+                       or incident.status.name() == 'IN_PROGRESS'
+                       or incident.status.name() == 'RESOLVED'} ? 'completed' : 'pending')">
+                            <span class="timeline-dot">2</span>
+                            <div class="label">Reviewed</div>
+                        </li>
+
+                        <li class="timeline-step"
+                            th:classappend="${incident.status.name() == 'ASSIGNED'} ? 'current' :
+                        (${incident.status.name() == 'IN_PROGRESS'
+                       or incident.status.name() == 'RESOLVED'} ? 'completed' : 'pending')">
+                            <span class="timeline-dot">3</span>
+                            <div class="label">Assigned</div>
+                        </li>
+
+                        <li class="timeline-step"
+                            th:classappend="${incident.status.name() == 'IN_PROGRESS'} ? 'current' :
+                        (${incident.status.name() == 'RESOLVED'} ? 'completed' : 'pending')">
+                            <span class="timeline-dot">4</span>
+                            <div class="label">In Progress</div>
+                        </li>
+
+                        <li class="timeline-step"
+                            th:classappend="${incident.status.name() == 'RESOLVED'} ? 'current' : 'pending'">
+                            <span class="timeline-dot">5</span>
+                            <div class="label">Resolved</div>
+                        </li>
+                    </ul>
+                    <p th:if="${incident.status.name() == 'REJECTED'}"
+                       class="text-danger fw-semibold mt-3 mb-0">
+                        This incident was rejected during the review process.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <h2>Status History</h2>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-modern table-sm mb-0 align-middle">
+                            <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Changed By</th>
+                                <th>Timestamp</th>
+                                <th>Note</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            <tr th:if="${statusHistory == null or #lists.isEmpty(statusHistory)}">
+                                <td colspan="4" class="text-center text-secondary py-3">
+                                    No status history available yet.
+                                </td>
+                            </tr>
+
+                            <tr th:each="history : ${statusHistory}">
+                                <td>
+        <span class="status-badge"
+              style="background:#e2e8f0;color:#334155;border:1px solid #cbd5e1;"
+              th:text="${history.toStatusDisplayName}">
+            Status
+        </span>
+                                </td>
+
+                                <td th:text="${history.changedByName != null ? history.changedByName : 'Unknown'}">
+                                    Changed by
+                                </td>
+
+                                <td th:text="${#temporals.format(history.changedAt, 'dd MMM yyyy, HH:mm')}">
+                                    Timestamp
+                                </td>
+
+                                <td th:text="${history.reason != null ? history.reason : '-'}">
+                                    Note
+                                </td>
+                            </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h2>Actions</h2>
+                </div>
+
+                <div class="card-body">
+
+                    <a th:if="${incident.status.name() == 'SUBMITTED'}"
+                       th:href="@{/authority/incidents/{id}/review(id=${incident.id})}"
+                       class="btn btn-action w-100 mb-2">
+                        Review Incident
+                    </a>
+
+
+
+                    <a th:if="${incident.status.name() == 'UNDER_REVIEW'}"
+                       th:href="@{/authority/incidents/{id}/assign(id=${incident.id})}"
+                       class="btn btn-action w-100 mb-2">
+                        Assign Incident
+                    </a>
+
+                    <form th:if="${incident.status.name() == 'ASSIGNED'}"
+                          th:action="@{/authority/incidents/{id}/start(id=${incident.id})}"
+                          method="post"
+                          class="d-grid mb-2">
+                        <button class="btn btn-action" type="submit">
+                            Mark In Progress
+                        </button>
+                    </form>
+
+                    <a th:if="${incident.status.name() == 'IN_PROGRESS'}"
+                       th:href="@{/authority/incidents/{id}/resolve(id=${incident.id})}"
+                       class="btn btn-action w-100 mb-2">
+                        Resolve Incident
+                    </a>
+
+                    <p th:if="${incident.status.name() == 'RESOLVED'}"
+                       class="text-success fw-semibold mb-0">
+                        This incident is already resolved.
+                    </p>
+
+                    <p th:if="${incident.status.name() == 'REJECTED'}"
+                       class="text-danger fw-semibold mb-0">
+                        This incident was rejected.
+                    </p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script th:inline="javascript">
+    const latitude = /*[[${incident.latitude}]]*/ null;
+    const longitude = /*[[${incident.longitude}]]*/ null;
+    const title = /*[[${incident.title}]]*/ "Incident location";
+    const locationDescription = /*[[${incident.locationDescription}]]*/ "Submitted location";
+
+    if (latitude !== null && longitude !== null && !isNaN(latitude) && !isNaN(longitude)) {
+        const map = L.map('incidentMap').setView([latitude, longitude], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup(`
+                <strong>${title}</strong><br>
+                ${locationDescription}<br>
+                Lat: ${latitude}, Lng: ${longitude}
+            `)
+            .openPopup();
+    }
+</script>
+</body>
+</html>

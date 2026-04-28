@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Citizen Sign Up | Incident Reporting System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(130deg, #eaf4ff 0%, #f3fff6 55%, #fdf8ef 100%);
+        }
+
+        .signup-card {
+            border: 0;
+            border-radius: 1rem;
+            box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .left-panel {
+            background: linear-gradient(165deg, #0d6efd 0%, #0b5ed7 45%, #063a86 100%);
+            color: white;
+            height: 100%;
+        }
+
+        .benefit-pill {
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            border-radius: 0.75rem;
+            padding: 0.55rem 0.75rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+        }
+
+        .soft-muted {
+            color: #5f6f87;
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center">
+<div class="container py-4 py-md-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div class="card signup-card">
+                <div class="row g-0">
+                    <div class="col-lg-5 d-none d-lg-block">
+                        <div class="left-panel p-4 p-xl-5">
+                            <h2 class="h3 mb-3">Create Your Citizen Account</h2>
+                            <p class="mb-4 opacity-75">Register once to track submissions and follow incident progress in real time.</p>
+                            <div class="benefit-pill">Track all your submitted reports</div>
+                            <div class="benefit-pill">View lifecycle timeline and status updates</div>
+                            <div class="benefit-pill">Faster future incident reporting</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="card-body p-4 p-md-5">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <div>
+                                    <h1 class="h3 mb-1">Citizen Sign Up</h1>
+                                    <p class="soft-muted mb-0">Join the incident reporting platform.</p>
+                                </div>
+                                <a href="/" class="btn btn-outline-secondary btn-sm">Back Home</a>
+                            </div>
+
+                            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                            <form method="post" action="/signup" class="row g-3">
+                                <div class="col-12">
+                                    <label for="fullName" class="form-label">Full Name</label>
+                                    <input id="fullName" name="fullName" class="form-control" placeholder="Enter your full name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="citizenId" class="form-label">Citizen ID</label>
+                                    <input id="citizenId" name="citizenId" class="form-control" placeholder="e.g. CIT-2026-001" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input id="email" name="email" type="email" class="form-control" placeholder="you@email.com" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input id="password" name="password" type="password" class="form-control" minlength="8" placeholder="Minimum 8 characters" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                    <input id="confirmPassword" name="confirmPassword" type="password" class="form-control" minlength="8" placeholder="Repeat password" required>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-primary w-100 py-2" type="submit">Create Account</button>
+                                </div>
+                            </form>
+
+                            <p class="mt-3 mb-0 soft-muted">
+                                Already have an account?
+                                <a href="/login" class="text-decoration-none fw-semibold">Sign in</a>
+                            </p>
+
+                            <p class="small soft-muted mt-4 mb-0">
+                                This registration currently uses a temporary in-memory store for project demo flow. It is ready for your backend auth integration.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
