@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assign Incident</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        :root {
+            --bg-a: #eef2ff;
+            --bg-b: #f4f6ff;
+            --card: #ffffff;
+            --text: #1c2454;
+            --muted: #6570a6;
+            --border: #e3e8ff;
+            --primary: #4053d6;
+            --primary-2: #6b4fe3;
+            --success-bg: #e9f9f1;
+            --success-text: #137a4d;
+            --warning-bg: #fff5e8;
+            --warning-text: #9b5c00;
+            --shadow: 0 12px 32px rgba(58, 77, 173, 0.12);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+            color: var(--text);
+            background:
+                    radial-gradient(circle at 90% -10%, rgba(107, 79, 227, 0.2), transparent 40%),
+                    radial-gradient(circle at -10% 10%, rgba(64, 83, 214, 0.18), transparent 38%),
+                    linear-gradient(180deg, var(--bg-a) 0%, var(--bg-b) 100%);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .page-wrap {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 32px 22px 44px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--primary);
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 18px rgba(63, 83, 214, 0.08);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-1px);
+            background: #f6f8ff;
+        }
+
+        .title {
+            margin: 10px 0 4px;
+            font-size: clamp(1.5rem, 2.4vw, 2rem);
+            letter-spacing: 0.2px;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.98rem;
+        }
+
+        .status-badge {
+            align-self: center;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            background: linear-gradient(120deg, #e7fbf1, #ddf8ef);
+            color: var(--success-text);
+            border: 1px solid #c7f0de;
+            white-space: nowrap;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .main-stack {
+            display: grid;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-head {
+            padding: 18px 22px;
+            background: linear-gradient(125deg, rgba(64, 83, 214, 0.1), rgba(107, 79, 227, 0.12));
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-head h2,
+        .card-head h3 {
+            margin: 0;
+            font-size: 1.06rem;
+            letter-spacing: 0.2px;
+        }
+
+        .card-body {
+            padding: 20px 22px 24px;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .meta-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 13px 14px;
+            background: linear-gradient(180deg, #ffffff, #fafbff);
+        }
+
+        .meta-label {
+            display: block;
+            color: var(--muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.55px;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .meta-value {
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: #202859;
+            word-break: break-word;
+        }
+
+        .urgency-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            border: 1px solid transparent;
+        }
+
+        .urgency-high {
+            background: rgba(220, 79, 111, 0.14);
+            color: #bc2b4f;
+            border-color: rgba(220, 79, 111, 0.24);
+        }
+
+        .urgency-medium {
+            background: rgba(200, 122, 42, 0.14);
+            color: #a55e18;
+            border-color: rgba(200, 122, 42, 0.24);
+        }
+
+        .urgency-low {
+            background: rgba(31, 157, 122, 0.14);
+            color: #13785d;
+            border-color: rgba(31, 157, 122, 0.24);
+        }
+
+        .description {
+            margin: 0;
+            color: #313b73;
+            font-size: 0.96rem;
+        }
+
+        .warn-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: var(--warning-bg);
+            color: var(--warning-text);
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: 1px solid #ffd9a2;
+        }
+
+        .evidence-grid {
+            margin-top: 16px;
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .thumb,
+        .map-placeholder {
+            height: 118px;
+            border-radius: 12px;
+            border: 1px dashed #bcc7ff;
+            background: linear-gradient(145deg, #f8f9ff, #eef2ff);
+            display: grid;
+            place-items: center;
+            color: #5e6abb;
+            font-size: 0.86rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .map-placeholder {
+            grid-column: span 3;
+            height: 260px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #cfd7ff;
+            background: #eef2ff;
+        }
+
+        #incidentMap {
+            width: 100%;
+            height: 100%;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #2f3a7f;
+            letter-spacing: 0.2px;
+        }
+
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid #cfd7ff;
+            background: #fbfcff;
+            border-radius: 12px;
+            padding: 11px 12px;
+            font: inherit;
+            color: #1f285e;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #7082ef;
+            box-shadow: 0 0 0 4px rgba(112, 130, 239, 0.16);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .assign-btn {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-weight: 700;
+            font-size: 0.93rem;
+            color: #fff;
+            background: linear-gradient(120deg, var(--primary), var(--primary-2));
+            box-shadow: 0 10px 22px rgba(70, 78, 210, 0.34);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        .assign-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 24px rgba(70, 78, 210, 0.38);
+        }
+
+        .side-card .card-body {
+            display: grid;
+            gap: 12px;
+        }
+
+        .side-item {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fbfcff;
+        }
+
+        .side-item small {
+            display: block;
+            color: var(--muted);
+            font-size: 0.73rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .side-item strong {
+            font-size: 0.92rem;
+            color: #27326f;
+            font-weight: 700;
+        }
+
+        .guidance {
+            margin: 0;
+            color: #3f4a87;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1024px) {
+            .content-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 760px) {
+            .topbar {
+                flex-wrap: wrap;
+            }
+
+            .overview-grid,
+            .form-grid,
+            .evidence-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .map-placeholder {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrap">
+    <header class="topbar">
+        <div>
+            <a class="back-btn" th:href="@{/authority/incidents}" href="#">← Back to Incidents</a>
+            <h1 class="title">Assign Incident</h1>
+            <p class="subtitle">Assign this incident to the appropriate department or authority officer for follow-up.</p>
+        </div>
+    </header>
+
+    <div class="content-grid">
+        <main class="main-stack">
+            <section class="card">
+                <div class="card-head">
+                    <h2>Incident Overview</h2>
+                </div>
+                <div class="card-body">
+                    <div class="overview-grid">
+                        <article class="meta-item">
+                            <span class="meta-label">Incident ID</span>
+                            <span class="meta-value" th:text="${'INC-' + incident.id}">INC-1</span>
+                        </article>
+                        <article class="meta-item">
+                            <span class="meta-label">Category</span>
+                            <span class="meta-value" th:text="${incident.categoryDisplayName}">Category</span>
+                        </article>
+                        <article class="meta-item">
+                            <span class="meta-label">Submitted Date</span>
+                            <span class="meta-value"
+                                  th:text="${incident.createdAt != null ? #temporals.format(incident.createdAt, 'dd MMM yyyy · HH:mm') : 'N/A'}">
+                                    Created date
+                            </span>
+                        </article>
+                        <article class="meta-item">
+                            <span class="meta-label">Urgency</span>
+                            <span class="meta-value">
+                                <span class="urgency-badge"
+                                      th:text="${incident.urgencyDisplayName != null ? incident.urgencyDisplayName : 'Not Set'}"
+                                      th:classappend="${incident.urgencyLevel != null and incident.urgencyLevel.name() == 'HIGH'} ? ' urgency-high' :
+                      (${incident.urgencyLevel != null and incident.urgencyLevel.name() == 'MEDIUM'} ? ' urgency-medium' : ' urgency-low')">
+    Urgency
+</span>
+                            </span>
+                        </article>
+                        <article class="meta-item">
+                            <span class="meta-label">Location / Zone</span>
+                            <span class="meta-value" th:text="${incident.locationDescription != null ? incident.locationDescription : 'No location description'}">
+    Location
+</span>
+                        </article>
+                        <article class="meta-item">
+                            <span class="meta-label">Reported By</span>
+                            <span class="meta-value" th:text="${incident.reporterName != null ? incident.reporterName : 'Unknown reporter'}">
+    Reporter
+</span>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-head">
+                    <h2>Description &amp; Evidence</h2>
+                </div>
+                <div class="card-body">
+                    <p class="description" th:text="${incident.description}">
+                        A damaged traffic signal and debris were observed at the northbound intersection, causing heavy congestion and an elevated risk of collisions during rush hour.
+                    </p>
+
+                    <span class="warn-badge" th:if="${incident.overdue}">
+    ⚠ This incident is overdue
+</span>
+
+                    <span class="warn-badge" th:if="${incident.escalated}">
+    🚨 This incident has been escalated
+</span>
+
+                    <div class="evidence-grid">
+                        <!-- Multiple photos from photoUrls list -->
+                        <div class="thumb" th:each="pUrl : ${incident.photoUrls}"
+                             th:if="${incident.photoUrls != null and !#lists.isEmpty(incident.photoUrls)}">
+                            <a th:href="${pUrl}" target="_blank">
+                                <img th:src="${pUrl}"
+                                     alt="Incident photo"
+                                     style="width:100%; height:100%; object-fit:cover; border-radius:12px;">
+                            </a>
+                        </div>
+
+                        <!-- Legacy single photoUrl fallback -->
+                        <div class="thumb"
+                             th:if="${(incident.photoUrls == null or #lists.isEmpty(incident.photoUrls)) and incident.photoUrl != null}">
+                            <img th:src="@{${incident.photoUrl}}"
+                                 alt="Incident photo"
+                                 style="width:100%; height:100%; object-fit:cover; border-radius:12px;">
+                        </div>
+
+                        <div class="thumb"
+                             th:if="${(incident.photoUrls == null or #lists.isEmpty(incident.photoUrls)) and incident.photoUrl == null}">
+                            No photo evidence
+                        </div>
+
+                        <div class="map-placeholder"
+                             th:if="${incident.latitude != null and incident.longitude != null}">
+                            <div id="incidentMap"
+                                 th:attr="data-lat=${incident.latitude}, data-lng=${incident.longitude}, data-title=${incident.title}">
+                            </div>
+                        </div>
+
+                        <div class="map-placeholder"
+                             th:if="${incident.latitude == null or incident.longitude == null}">
+                            No coordinates available for this incident
+                        </div>
+
+                        <div class="meta-item" style="grid-column: span 3;"
+                             th:if="${incident.latitude != null and incident.longitude != null}">
+                            <span class="meta-label">Coordinates</span>
+                            <span class="meta-value"
+                                  th:text="${incident.latitude + ', ' + incident.longitude}">
+            33.5333, -5.1167
+        </span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-head">
+                    <h2>Assignment Details</h2>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/authority/incidents/{id}/assign(id=${incident.id})}" method="post">
+                        <div class="form-grid">
+                            <div class="field">
+                                <label for="department">Department</label>
+                                <select id="department" name="department" required>
+                                    <option value="" selected disabled>Select department</option>
+                                    <option th:each="dept : ${departments}"
+                                            th:value="${dept.name()}"
+                                            th:text="${dept.displayName}">
+                                        Department
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="officer">Authority Officer</label>
+                                <select id="officer" name="officerId">
+                                    <option value="" selected>No specific officer</option>
+                                    <option th:each="officer : ${officers}"
+                                            th:value="${officer.id}"
+                                            th:text="${officer.fullName}">
+                                        Officer
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="field full">
+                                <label for="note">Assignment Note (Optional)</label>
+                                <textarea id="note" name="note" placeholder="Provide assignment context, internal instructions, or follow-up notes..."></textarea>
+                            </div>
+
+                            <div class="field full">
+                                <button type="submit" class="assign-btn">Assign Incident</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+
+        <aside class="card side-card" aria-label="Incident meta details">
+            <div class="card-head">
+                <h3>Quick Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="side-item">
+                    <small>Last Updated</small>
+                    <strong th:text="${incident.updatedAt != null ? #temporals.format(incident.updatedAt, 'dd MMM yyyy · HH:mm') : 'N/A'}">
+                        Last updated
+                    </strong>
+                </div>
+
+                <div class="side-item">
+                    <small>Guidance</small>
+                    <p class="guidance">Assign based on incident category, urgency level, and location zone ownership to ensure timely follow-up.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const mapElement = document.getElementById("incidentMap");
+
+        if (!mapElement) {
+            return;
+        }
+
+        const lat = parseFloat(mapElement.dataset.lat);
+        const lng = parseFloat(mapElement.dataset.lng);
+        const title = mapElement.dataset.title || "Incident location";
+
+        if (Number.isNaN(lat) || Number.isNaN(lng)) {
+            return;
+        }
+
+        const map = L.map("incidentMap").setView([lat, lng], 15);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup(title)
+            .openPopup();
+
+        setTimeout(function () {
+            map.invalidateSize();
+        }, 200);
+    });
+</script>
+</body>
+</html>

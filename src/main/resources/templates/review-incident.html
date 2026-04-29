@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Review Incident</title>
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        :root {
+            --bg-1: #f4f7ff;
+            --bg-2: #eef1ff;
+            --surface: #ffffff;
+            --text-1: #1a2240;
+            --text-2: #556089;
+            --line: #e4e9ff;
+            --blue-500: #3f67ff;
+            --purple-500: #7a5cff;
+            --danger: #dc4f6f;
+            --danger-soft: #fff3f6;
+            --warning: #c87a2a;
+            --success: #1f9d7a;
+            --shadow-soft: 0 10px 30px rgba(41, 63, 150, 0.10);
+            --shadow-sm: 0 6px 18px rgba(41, 63, 150, 0.08);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-1);
+            background:
+                    radial-gradient(1200px 500px at 8% -15%, rgba(122, 92, 255, 0.18), transparent 55%),
+                    radial-gradient(900px 420px at 95% -10%, rgba(63, 103, 255, 0.18), transparent 60%),
+                    linear-gradient(180deg, var(--bg-1), var(--bg-2));
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 28px 20px 36px;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            color: #2c3a72;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(77, 99, 190, 0.18);
+            box-shadow: var(--shadow-sm);
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .title-wrap h1 {
+            margin: 0;
+            font-size: clamp(1.5rem, 2.8vw, 2rem);
+            letter-spacing: 0.2px;
+        }
+
+        .title-wrap p {
+            margin: 6px 0 0;
+            color: var(--text-2);
+            font-size: 0.98rem;
+        }
+
+        .header-badges {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            border: 1px solid transparent;
+        }
+
+        .badge-status {
+            background: rgba(63, 103, 255, 0.14);
+            color: #2c47c8;
+            border-color: rgba(63, 103, 255, 0.24);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+            gap: 18px;
+        }
+
+        .stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            padding: 20px;
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 1.08rem;
+            letter-spacing: 0.2px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .field {
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            background: #fbfcff;
+        }
+
+        .field .label {
+            display: block;
+            color: var(--text-2);
+            font-size: 0.78rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .field .value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1d2b5e;
+            word-break: break-word;
+        }
+
+        .urgency-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            border: 1px solid transparent;
+        }
+
+        .urgency-high {
+            background: rgba(220, 79, 111, 0.14);
+            color: #bc2b4f;
+            border-color: rgba(220, 79, 111, 0.24);
+        }
+
+        .urgency-medium {
+            background: rgba(200, 122, 42, 0.14);
+            color: #a55e18;
+            border-color: rgba(200, 122, 42, 0.24);
+        }
+
+        .urgency-low {
+            background: rgba(31, 157, 122, 0.14);
+            color: #13785d;
+            border-color: rgba(31, 157, 122, 0.24);
+        }
+
+        .description-text {
+            margin: 0;
+            color: #273467;
+            line-height: 1.6;
+            background: #f8faff;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            padding: 14px;
+        }
+
+        .evidence-grid {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .thumb {
+            min-height: 110px;
+            border-radius: var(--radius-md);
+            border: 1px dashed #c9d3ff;
+            background: linear-gradient(145deg, #f0f4ff, #edf2ff);
+            display: grid;
+            place-items: center;
+            color: #6171b4;
+            font-size: 0.83rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .meta-row {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .alert-pill {
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            border: 1px solid transparent;
+        }
+
+        .alert-duplicate {
+            background: rgba(200, 122, 42, 0.14);
+            color: #a55e18;
+            border-color: rgba(200, 122, 42, 0.22);
+        }
+
+        .map-placeholder {
+            margin-top: 14px;
+            border-radius: var(--radius-md);
+            height: 260px;
+            border: 1px solid #cfd9ff;
+            background: #eef2ff;
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+            color: #3c4d9c;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        #incidentMap {
+            width: 100%;
+            height: 100%;
+        }
+
+        .review-form {
+            display: grid;
+            gap: 14px;
+        }
+
+        .form-block {
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            background: #fafcff;
+        }
+
+        .form-block.warning {
+            background: var(--danger-soft);
+            border-color: #ffd8e1;
+        }
+
+        .form-block h3 {
+            margin: 0 0 8px;
+            font-size: 0.95rem;
+        }
+
+        label {
+            display: inline-block;
+            margin-bottom: 8px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #405090;
+        }
+
+        textarea {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #ccd7ff;
+            background: #ffffff;
+            padding: 11px 12px;
+            font: inherit;
+            color: #223160;
+            resize: vertical;
+            min-height: 110px;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #89a0ff;
+            box-shadow: 0 0 0 3px rgba(122, 92, 255, 0.18);
+        }
+
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 11px 18px;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            letter-spacing: 0.2px;
+        }
+
+        .btn-verify {
+            background: linear-gradient(135deg, var(--blue-500), var(--purple-500));
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, #e85b79, #cd3d5e);
+        }
+
+        .sidebar-card h3 {
+            margin: 0 0 12px;
+            font-size: 0.95rem;
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .kv-item {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 11px;
+            background: #fcfdff;
+        }
+
+        .kv-item .k {
+            font-size: 0.75rem;
+            color: #6070ad;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .kv-item .v {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #23336a;
+        }
+
+        @media (max-width: 1040px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .overview-grid,
+            .evidence-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-row {
+                justify-content: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <header class="top-bar">
+        <a class="back-btn" th:href="@{/authority/incidents}">← Back to Incidents</a>
+        <div class="title-wrap">
+            <h1>Review Incident</h1>
+            <p>Review incident details and decide whether to verify or reject the report.</p>
+        </div>
+        <div class="header-badges">
+            <span class="badge badge-status" th:text="${incident.statusDisplayName}">Status</span>
+        </div>
+    </header>
+
+    <main class="layout">
+        <section class="stack">
+            <article class="card">
+                <div class="section-head">
+                    <h2>Incident Overview</h2>
+                </div>
+                <div class="overview-grid">
+                    <div class="field">
+                        <span class="label">Incident ID</span>
+                        <span class="value" th:text="${'INC-' + incident.id}">INC-1</span>
+                    </div>
+                    <div class="field">
+                        <span class="label">Category</span>
+                        <span class="value" th:text="${incident.categoryDisplayName}">Category</span>
+                    </div>
+                    <div class="field">
+                        <span class="label">Submitted Date</span>
+                        <span class="value"
+      th:text="${incident.createdAt != null ? #temporals.format(incident.createdAt, 'dd MMM yyyy · HH:mm') : 'N/A'}">
+    Submitted date
+</span>
+                    </div>
+                    <div class="field">
+                        <span class="label">Urgency</span>
+                        <span class="value">
+                            <span class="urgency-badge"
+                                  th:text="${incident.urgencyDisplayName != null ? incident.urgencyDisplayName : 'Not Set'}"
+                                  th:classappend="${incident.urgencyLevel != null and incident.urgencyLevel.name() == 'HIGH'} ? ' urgency-high' :
+                      (${incident.urgencyLevel != null and incident.urgencyLevel.name() == 'MEDIUM'} ? ' urgency-medium' : ' urgency-low')">
+    Urgency
+</span>
+                        </span>
+                    </div>
+                    <div class="field">
+                        <span class="label">Location / Zone</span>
+                        <span class="value"
+      th:text="${incident.locationDescription != null ? incident.locationDescription : 'No location description'}">
+    Location
+</span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="section-head">
+                    <h2>Description &amp; Evidence</h2>
+                </div>
+                <p class="description-text" th:text="${incident.description}">
+                    A sinkhole has formed near the main intersection and is expanding after heavy rain. Nearby residents report traffic risk and water leakage from underground lines.
+                </p>
+
+                <div class="evidence-grid">
+                    <!-- Multiple photos from photoUrls list -->
+                    <div class="thumb" th:each="pUrl : ${incident.photoUrls}"
+                         th:if="${incident.photoUrls != null and !#lists.isEmpty(incident.photoUrls)}">
+                        <a th:href="${pUrl}" target="_blank">
+                            <img th:src="${pUrl}"
+                                 alt="Incident photo"
+                                 style="width:100%; height:100%; object-fit:cover; border-radius:14px;">
+                        </a>
+                    </div>
+
+                    <!-- Legacy single photoUrl fallback -->
+                    <div class="thumb"
+                         th:if="${(incident.photoUrls == null or #lists.isEmpty(incident.photoUrls)) and incident.photoUrl != null}">
+                        <img th:src="@{${incident.photoUrl}}"
+                             alt="Incident photo"
+                             style="width:100%; height:100%; object-fit:cover; border-radius:14px;">
+                    </div>
+
+                    <div class="thumb"
+                         th:if="${(incident.photoUrls == null or #lists.isEmpty(incident.photoUrls)) and incident.photoUrl == null}">
+                        No photo evidence
+                    </div>
+                </div>
+
+                <div class="map-placeholder"
+                     th:if="${incident.latitude != null and incident.longitude != null}">
+                    <div id="incidentMap"
+                         th:attr="data-lat=${incident.latitude}, data-lng=${incident.longitude}, data-title=${incident.title}">
+                    </div>
+                </div>
+
+                <div class="map-placeholder"
+                     th:if="${incident.latitude == null or incident.longitude == null}">
+                    No coordinates available for this incident
+                </div>
+
+                <div class="meta-row"
+                     th:if="${incident.latitude != null and incident.longitude != null}">
+    <span class="alert-pill alert-duplicate"
+          th:text="${'Coordinates: ' + incident.latitude + ', ' + incident.longitude}">
+        Coordinates
+    </span>
+                </div>
+
+                <div class="meta-row">
+    <span class="alert-pill alert-duplicate" th:if="${incident.overdue}">
+        ⚠ This incident is overdue
+    </span>
+
+                    <span class="alert-pill alert-duplicate" th:if="${incident.escalated}">
+        🚨 This incident has been escalated
+    </span>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="section-head">
+                    <h2>Review Decision</h2>
+                </div>
+
+                <form class="review-form" th:action="@{/authority/incidents/{id}/review(id=${incident.id})}" method="post">
+                    <div class="form-block">
+                        <h3>Review Notes</h3>
+                        <label for="reviewNotes">Authority internal notes</label>
+                        <textarea id="reviewNotes" name="reviewNotes" placeholder="Enter verification observations, site findings, or coordination notes..."></textarea>
+                    </div>
+
+                    <div class="form-block warning">
+                        <h3>Rejection Reason</h3>
+                        <label for="rejectionReason">Required only when rejecting this incident</label>
+                        <textarea id="rejectionReason" name="rejectionReason" placeholder="Provide clear reason for rejection..."></textarea>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-verify" type="submit" name="decision" value="verify">Verify Incident</button>
+                        <button class="btn btn-reject" type="submit" name="decision" value="reject">Reject Incident</button>
+                    </div>
+                </form>
+            </article>
+        </section>
+
+        <aside class="stack">
+            <article class="card sidebar-card">
+                <h3>Report Information</h3>
+                <div class="kv">
+                    <div class="kv-item">
+                        <span class="k">Last Updated</span>
+                        <span class="v"
+      th:text="${incident.updatedAt != null ? #temporals.format(incident.updatedAt, 'dd MMM yyyy · HH:mm') : 'N/A'}">
+    Last updated
+</span>
+                    </div>
+                    <div class="kv-item">
+                        <span class="k">Reported By</span>
+                        <span class="v" th:text="${incident.reporterName != null ? incident.reporterName : 'Unknown reporter'}">
+    Reporter
+</span>
+                    </div>
+                </div>
+            </article>
+        </aside>
+    </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const mapElement = document.getElementById("incidentMap");
+
+        if (!mapElement) {
+            return;
+        }
+
+        const lat = parseFloat(mapElement.dataset.lat);
+        const lng = parseFloat(mapElement.dataset.lng);
+        const title = mapElement.dataset.title || "Incident location";
+
+        if (Number.isNaN(lat) || Number.isNaN(lng)) {
+            return;
+        }
+
+        const map = L.map("incidentMap").setView([lat, lng], 15);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup(title + "<br>Coordinates: " + lat + ", " + lng)
+            .openPopup();
+
+        setTimeout(function () {
+            map.invalidateSize();
+        }, 200);
+    });
+</script>
+
+</body>
+</html>

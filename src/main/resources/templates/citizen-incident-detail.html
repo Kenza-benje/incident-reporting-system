@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Detail | Alertify</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <style>
+        body {
+            background: linear-gradient(180deg, #f4f7ff 0%, #eef4ff 100%);
+            min-height: 100vh;
+            color: #102a5c;
+        }
+
+        .page-card {
+            border: 0;
+            border-radius: 22px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .section-card {
+            border: 0;
+            border-radius: 18px;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+        }
+
+        .reference {
+            color: #1d4ed8;
+            font-weight: 800;
+        }
+
+        .badge-soft {
+            border-radius: 999px;
+            padding: 0.45rem 0.8rem;
+            font-weight: 700;
+        }
+
+        .badge-status {
+            background: #eef2ff;
+            color: #1d4ed8;
+            border: 1px solid #c7d2fe;
+        }
+
+        .badge-urgency {
+            background: #fff7ed;
+            color: #b45309;
+            border: 1px solid #fed7aa;
+        }
+
+        .badge-category {
+            background: #ecfeff;
+            color: #0e7490;
+            border: 1px solid #a5f3fc;
+        }
+
+        #incidentMap {
+            height: 360px;
+            width: 100%;
+            border-radius: 18px;
+            border: 1px solid #dbe4ff;
+        }
+
+        .label {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+        }
+
+        .value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #102a5c;
+        }
+
+        .evidence-img {
+            max-width: 100%;
+            border-radius: 16px;
+            border: 1px solid #dbe4ff;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="fw-bold mb-1">Incident Detail</h1>
+            <p class="text-muted mb-0">Track the full information of your submitted report.</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" th:href="@{/citizen/my-reports}">
+                My Reports
+            </a>
+            <a class="btn btn-outline-secondary" th:href="@{/citizen/report}">
+                New Report
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${error != null}" class="alert alert-danger" th:text="${error}">
+        Error
+    </div>
+
+    <div th:if="${incident != null}">
+
+        <!-- Header -->
+        <div class="card page-card mb-4">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div>
+                        <p class="label mb-1">Tracking reference</p>
+                        <h2 class="reference mb-2" th:text="'INC-' + ${incident.id}">INC-1</h2>
+
+                        <h3 class="h4 fw-bold mb-2"
+                            th:text="${incident.title != null ? incident.title : 'No title'}">
+                            Incident title
+                        </h3>
+
+                        <p class="text-muted mb-0"
+                           th:text="${incident.description != null ? incident.description : 'No description provided.'}">
+                            Description
+                        </p>
+                    </div>
+
+                    <div class="text-md-end">
+                        <div class="mb-2">
+                            <span class="badge-soft badge-category"
+                                  th:text="${incident.categoryDisplayName != null ? incident.categoryDisplayName : 'N/A'}">
+                                Category
+                            </span>
+                        </div>
+
+                        <div class="mb-2">
+                            <span class="badge-soft badge-urgency"
+                                  th:text="${incident.urgencyDisplayName != null ? incident.urgencyDisplayName : 'N/A'}">
+                                Urgency
+                            </span>
+                        </div>
+
+                        <div>
+                            <span class="badge-soft badge-status"
+                                  th:text="${incident.statusDisplayName != null ? incident.statusDisplayName : 'N/A'}">
+                                Status
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details grid -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card section-card h-100">
+                    <div class="card-body">
+                        <p class="label mb-1">Submitted at</p>
+                        <p class="value mb-0"
+                           th:text="${incident.createdAt != null ? #temporals.format(incident.createdAt, 'yyyy-MM-dd HH:mm') : 'N/A'}">
+                            Date
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card section-card h-100">
+                    <div class="card-body">
+                        <p class="label mb-1">Latitude</p>
+                        <p class="value mb-0"
+                           th:text="${incident.latitude != null ? incident.latitude : 'N/A'}">
+                            Latitude
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card section-card h-100">
+                    <div class="card-body">
+                        <p class="label mb-1">Longitude</p>
+                        <p class="value mb-0"
+                           th:text="${incident.longitude != null ? incident.longitude : 'N/A'}">
+                            Longitude
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card section-card h-100">
+                    <div class="card-body">
+                        <p class="label mb-1">Current status</p>
+                        <p class="value mb-0"
+                           th:text="${incident.statusDisplayName != null ? incident.statusDisplayName : 'N/A'}">
+                            Status
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location and Map -->
+        <div class="card section-card mb-4">
+            <div class="card-header bg-white py-3 px-4">
+                <h4 class="h5 fw-bold mb-0">Incident Location</h4>
+            </div>
+
+            <div class="card-body p-4">
+                <p class="mb-3">
+                    <span class="label d-block mb-1">Location description</span>
+                    <span class="value"
+                          th:text="${incident.locationDescription != null ? incident.locationDescription : 'No location description'}">
+                        Location
+                    </span>
+                </p>
+
+                <div th:if="${incident.latitude != null and incident.longitude != null}">
+                    <div id="incidentMap"></div>
+                    <p class="text-muted small mt-2 mb-0">
+                        Map preview based on the submitted incident coordinates.
+                    </p>
+                </div>
+
+                <div th:if="${incident.latitude == null or incident.longitude == null}"
+                     class="alert alert-warning mb-0">
+                    No coordinates were submitted for this incident.
+                </div>
+            </div>
+        </div>
+
+        <!-- Evidence -->
+        <div class="card section-card mb-4">
+            <div class="card-header bg-white py-3 px-4">
+                <h4 class="h5 fw-bold mb-0">Evidence / Uploaded Image</h4>
+            </div>
+
+            <div class="card-body p-4">
+
+                <div th:if="${incident.photoUrl != null}">
+                    <a th:href="@{${incident.photoUrl}}" target="_blank">
+                        <img class="evidence-img"
+                             th:src="@{${incident.photoUrl}}"
+                             alt="Citizen evidence photo">
+                    </a>
+                    <p class="text-muted small mt-2 mb-0">
+                        Click the image to open it in a new tab.
+                    </p>
+                </div>
+
+                <div th:if="${incident.photoUrl == null}" class="text-muted">
+                    No evidence image was uploaded for this incident.
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer actions -->
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-primary" th:href="@{/citizen/my-reports}">
+                Back to My Reports
+            </a>
+            <a class="btn btn-outline-secondary" th:href="@{/}">
+                Back Home
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Leaflet Map JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script th:inline="javascript">
+    const lat = /*[[${incident != null ? incident.latitude : null}]]*/ null;
+    const lng = /*[[${incident != null ? incident.longitude : null}]]*/ null;
+    const title = /*[[${incident != null ? incident.title : 'Incident location'}]]*/ 'Incident location';
+
+    if (lat !== null && lng !== null) {
+        const map = L.map('incidentMap').setView([lat, lng], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup(title)
+            .openPopup();
+
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 200);
+    }
+</script>
+
+</body>
+</html>
