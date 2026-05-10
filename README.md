@@ -95,6 +95,12 @@ This project was developed by a group of four members. Each member was responsib
 
 The project was completed collaboratively, with all members contributing to testing, debugging, documentation, and preparation of the final demo.
 
+## 10. Video Demo
+A video demo was prepared to present the main features of the project, including citizen reporting, authority dashboard, incident review, assignment, and resolution.
+
+Demo video link: https://alakhawayn365-my.sharepoint.com/:v:/g/personal/a_labyad_aui_ma/IQDjBBFG0dUQTYSPm9bbwc39AaLK8zOWO-bkG1AwQdp2UwM?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D&e=AXNwbr
+
+
 ## 9. Setup Instructions
 
 ### Step 1: Clone the repository
