@@ -1,87 +1,105 @@
-Incident Reporting and Monitoring System
-1. Project Overview
+# Incident Reporting and Monitoring System
 
-The Incident Reporting and Monitoring System is a web-based platform that enables citizens to report environmental and public safety incidents while allowing authorities to review, manage, and resolve them efficiently.
+## 1. Project Overview
 
-Unlike basic reporting tools, this system supports a complete incident lifecycle, from submission to resolution, ensuring structured handling and follow-up of each case.
+The Incident Reporting and Monitoring System is a web-based platform that enables citizens to report environmental and public safety incidents in Ifrane, while allowing authorities to review, manage, assign, and resolve them efficiently.
 
-2. Problem Statement
+The system supports a complete incident lifecycle, from citizen submission to final resolution by the responsible authority.
 
-In many cities, communication between citizens and authorities regarding environmental and safety issues is inefficient, unstructured, and lacks transparency.
+## 2. Problem Statement
 
-This platform addresses these challenges by providing a centralized system for reporting, tracking, and managing incidents in a reliable and organized manner.
+In many cities, communication between citizens and authorities regarding public safety and environmental issues is inefficient, unstructured, and lacks transparency.
 
-3. Solution Description
+This platform solves that problem by centralizing incident reporting, improving follow-up, and allowing authorities to manage incidents in a structured way.
 
-The system improves coordination between citizens and public authorities in Ifrane by introducing a structured workflow.
+## 3. Solution Description
 
-Citizens can submit reports with supporting evidence and geolocation data, while authorities can validate, assign, and monitor incidents until resolution.
+Citizens can submit incident reports with descriptions, categories, photos, and geolocation data. Authorities can review reports, verify or reject them, assign them to departments, update their status, and resolve them.
 
-4. Core Functionalities
-4.1 Citizen Interface
-Submit incident reports through a user-friendly web form
-Upload photo evidence (JPG, JPEG, PNG)
-Select incident location via an interactive map
-Track the status of submitted reports
-Submit reports anonymously or as a registered user
-4.2 Authority Interface
-Access a centralized dashboard of all incidents
-Filter incidents by category, status, date, and location
-Review detailed incident information (description, images, location)
-Verify or reject submitted reports
-Assign incidents to departments or responsible personnel
-Update incident status throughout its lifecycle
-Add internal notes and investigation details
-View statistical summaries and reports
-5. Incident Lifecycle Workflow
+## 4. Technologies Used
 
-The system follows a structured workflow:
+- Java
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- Thymeleaf
+- PostgreSQL
+- HTML
+- CSS
+- JavaScript
+- OpenStreetMap
+- Gradle
+- GitHub
 
-Report submission by the citizen
-Input validation and duplicate detection
-Storage of the incident in the database
-Review by authorized personnel
-Verification or rejection of the incident
-Assignment to the appropriate authority
-Status updates until final resolution
-6. System Architecture
-6.1 Technical Architecture
-Architectural Pattern: Model-View-Controller (MVC)
-Backend: RESTful API
-Database: PostgreSQL
-Frontend: Web-based application
-6.2 External Services
-Geolocation API for mapping and location selection
-Media storage service for managing uploaded images
-7. Key System Capabilities
-Duplicate incident detection (within 300 meters over 24 hours)
-Multi-stage status tracking:
-Submitted
-Under Review
-Verified
-Rejected
-In Progress
-Resolved
-Audit logging of all major actions
-Data retention policy (minimum of three years)
-8. Non-Functional Highlights
-Secure communication using HTTPS
-Password hashing and secure authentication
-Role-based access control
-High performance (response time under 2 seconds)
-Support for concurrent users
-Automated database backups
-9. Project Team
-Marwa Errahmani
-Aicha Labyad
-Imane Chnigar
-Kenza Benjelloun
+## 5. Main Features
 
-Supervisor: Dr. Chakiri Houda
+### Citizen Interface
 
-10. Future Enhancements
-Notification system (email/SMS alerts)
-AI-based incident classification
-Severity prioritization
-Advanced analytics dashboard
-Intelligent assignment mechanisms
+- Submit incident reports
+- Upload photo evidence
+- Select incident location using an interactive map
+- Track submitted reports
+- Submit reports as a registered user or anonymously
+
+### Authority Interface
+
+- Access an authority dashboard
+- View all submitted incidents
+- Filter incidents by category, status, date, and location
+- Review incident details
+- Verify or reject reports
+- Assign incidents to responsible departments or personnel
+- Update incident status
+- Add internal notes and investigation details
+- View statistics and summaries
+
+## 6. Incident Lifecycle
+
+The system follows this workflow:
+
+1. Citizen submits an incident report.
+2. The system validates the report.
+3. The system stores the report in the database.
+4. Authority reviews the report.
+5. Authority verifies or rejects the report.
+6. Verified reports are assigned to the appropriate department.
+7. The incident status is updated during treatment.
+8. The incident is resolved.
+
+Example status flow:
+
+Submitted → Under Review → Verified → Assigned → In Progress → Resolved
+
+Rejected is used when the report is invalid.
+
+## 7. System Architecture
+
+The project follows the MVC architecture.
+
+- Model: Represents entities such as Incident, User, Status, and Category.
+- View: Thymeleaf HTML pages used to display the interface.
+- Controller: Handles user requests and connects the views with backend logic.
+- Service: Contains the business logic of the application.
+- Repository: Communicates with the PostgreSQL database.
+
+## 8. Contribution History
+
+This project was developed by a group of four members. Each member was responsible for a specific part of the system, while the group also collaborated on integration, testing, documentation, and the final video demo.
+
+| Member | Main Contribution |
+|---|---|
+| Kenza Benjelloun | Worked on the authority side, including the authority dashboard, incident review pages, incident management interface, and authority workflow. |
+| Marwa Errahmani | Worked on the citizen side, including the report submission interface, citizen pages, and user interaction for submitting and tracking incidents. |
+| Imane Chnigar | Worked on the backend, including controllers, services, incident processing logic, and integration between the frontend and backend. |
+| Aicha Labyad | Worked on the database part, including database design, entity relationships, PostgreSQL configuration, and data persistence. |
+
+The project was completed collaboratively, with all members contributing to testing, debugging, documentation, and preparation of the final demo.
+
+## 9. Setup Instructions
+
+### Step 1: Clone the repository
+
+```bash
+git clone https://github.com/Kenza-benje/incident-reporting-system.git
+cd incident-reporting-system
+git checkout alertify-backend
